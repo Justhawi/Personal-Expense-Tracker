@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+
+<head>
+    
+    
+    <title>Personal Expense Tracker</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 700px;
+            margin: 0 auto;
+            padding: 2rem;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+        }
+        
+        .app-container {
+            background-color: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        .app-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1.5rem;
+            text-align: center;
+        }
+        
+        h1 {
+            margin: 0;
+            font-size: 1.8rem;
+            font-weight: 600;
+        }
+        
+        .form-container {
+            padding: 1.5rem;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .input-group {
+            margin-bottom: 1rem;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #555;
+        }
+        
+        input {
+            width: 100%;
+            padding: 0.8rem;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+        
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+        }
+        
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            width: 100%;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .expenses-container {
+            padding: 1.5rem;
+        }
+        
+        .expenses-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid #eee;
+        }
+        
+        h2 {
+            margin: 0;
+            font-size: 1.3rem;
+            color: #444;
+        }
+        
+        .total-amount {
+            font-weight: 600;
+            color: #764ba2;
+            font-size: 1.2rem;
+        }
+        
+        .expense-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .expense-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            margin-bottom: 0.5rem;
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            transition: transform 0.2s;
+        }
+        
+        .expense-item:hover {
+            transform: translateX(5px);
+            background-color: #f0f0f0;
+        }
+        
+        .expense-name {
+            font-weight: 500;
+        }
+        
+        .expense-amount {
+            font-weight: 600;
+            color: #e74c3c;
+        }
+        
+        .expense-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .delete-btn {
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+            padding: 0.4rem 0.8rem;
+            border-radius: 5px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .delete-btn:hover {
+            background-color: #c0392b;
+        }
+        
+        .no-expenses {
+            text-align: center;
+            color: #777;
+            padding: 2rem 0;
+        }
+        
+        .error {
+            color: #e74c3c;
+            font-size: 0.85rem;
+            margin-top: 0.3rem;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <div class="app-header">
+            <h1>Personal Expense Tracker</h1>
+        </div>
+        
+        <div class="form-container">
+            <div class="input-group">
+                <label for="expense-name">Expense Name</label>
+                <input type="text" id="expense-name" placeholder="e.g. Groceries, Rent">
+                <div id="name-error" class="error">Please enter an expense name</div>
+            </div>
+            
+            <div class="input-group">
+                <label for="expense-amount">Amount</label>
+                <input type="number" id="expense-amount" placeholder="Enter amount">
+                <div id="amount-error" class="error">Please enter a valid positive amount</div>
+            </div>
+            
+            <button id="add-expense">Add Expense</button>
+        </div>
+        
+        <div class="expenses-container">
+            <div class="expenses-header">
+                <h2>Your Expenses</h2>
+                <div id="total-display" class="total-amount">$0.00</div>
+            </div>
+            
+            <ul id="expense-list" class="expense-list">
+                <li class="no-expenses">No expenses added yet</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // DOM Elements
+        const expenseNameInput = document.getElementById('expense-name');
+        const expenseAmountInput = document.getElementById('expense-amount');
+        const addExpenseBtn = document.getElementById('add-expense');
+        const expenseList = document.getElementById('expense-list');
+        const totalDisplay = document.getElementById('total-display');
+        const nameError = document.getElementById('name-error');
+        const amountError = document.getElementById('amount-error');
+        
+        // Expenses array
+        let expenses = [];
+        
+        // Event Listeners
+        addExpenseBtn.addEventListener('click', addExpense);
+        
+        // Functions
+        function addExpense() {
+            // Reset errors
+            hideError(nameError);
+            hideError(amountError);
+            
+            // Get values
+            const name = expenseNameInput.value.trim();
+            const amount = parseFloat(expenseAmountInput.value);
+            
+            // Validate
+            let isValid = true;
+            
+            if (!name) {
+                showError(nameError, 'Please enter an expense name');
+                isValid = false;
+            }
+            
+            if (isNaN(amount)) {
+                showError(amountError, 'Please enter a valid amount');
+                isValid = false;
+            } else if (amount <= 0) {
+                showError(amountError, 'Amount must be positive');
+                isValid = false;
+            }
+            
+            if (!isValid) return;
+            
+            // Add to expenses
+            expenses.push({
+                id: Date.now(),
+                name: name,
+                amount: amount
+            });
+            
+            // Clear inputs
+            expenseNameInput.value = '';
+            expenseAmountInput.value = '';
+            
+            // Update UI
+            renderExpenses();
+        }
+        
+        function renderExpenses() {
+            // Clear list
+            expenseList.innerHTML = '';
+            
+            if (expenses.length === 0) {
+                expenseList.innerHTML = '<li class="no-expenses">No expenses added yet</li>';
+                totalDisplay.textContent = '$0.00';
+                return;
+            }
+            
+            // Calculate total
+            const total = expenses.reduce((sum, expense) => sum + expense.amount, 0);
+            totalDisplay.textContent = formatCurrency(total);
+            
+            // Render each expense
+            expenses.forEach(expense => {
+                const li = document.createElement('li');
+                li.className = 'expense-item';
+                li.innerHTML = `
+                    <span class="expense-name">${expense.name}</span>
+                    <div class="expense-actions">
+                        <span class="expense-amount">${formatCurrency(expense.amount)}</span>
+                        <button class="delete-btn" data-id="${expense.id}">Delete</button>
+                    </div>
+                `;
+                expenseList.appendChild(li);
+            });
+            
+            // Add event listeners to delete buttons
+            document.querySelectorAll('.delete-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const id = parseInt(e.target.getAttribute('data-id'));
+                    deleteExpense(id);
+                });
+            });
+        }
+        
+        function deleteExpense(id) {
+            expenses = expenses.filter(expense => expense.id !== id);
+            renderExpenses();
+        }
+        
+        function formatCurrency(amount) {
+            return amount.toLocaleString('en-US', {
+                style: 'currency',
+                currency: 'USD'
+            });
+        }
+        
+        function showError(element, message) {
+            element.textContent = message;
+            element.style.display = 'block';
+        }
+        
+        function hideError(element) {
+            element.style.display = 'none';
+        }
+        
+        // Initialize
+        renderExpenses();
+    </script>
+</body>
+</html>
